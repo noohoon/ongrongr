@@ -1,0 +1,29 @@
+<ion-view>
+	<ion-nav-buttons side="left">
+	<button class="button button-icon"><i class="icon ion-arrow-left-c"></i></button>
+	</ion-nav-buttons>
+	<ion-nav-title class="bold">로그인</ion-nav-title>
+	<ion-content class="ongr_login-page">
+		<div class="ongr_top-iamge"><p><img src="img/nologin-profile.png" /></p><h5>옹알옹알</h5></div>
+        <div class="row row-center wrap_login-form">
+            <div class="col col-67">
+				<label class="item item-input">
+					<input type="text" placeholder="아이디" name="">
+				</label>
+				<label class="item item-input">
+					<input type="password" placeholder="비밀번호" name="">				
+				</label>
+            </div>
+            <div class="col" style="height:101px">
+            	<button class="button button-full button-positive" style="height:100%;margin:0;">로그인</button>
+            </div>
+        </div>
+
+        <div class="wrap_login-button">
+        	<div class="kakao-login"><button class="button" ng-click="loginWithKakao()"><img src="img/logo-kakao.png" />카카오톡 아이디로 로그인</button></div>
+        	<!---div class="kakao-login" ng-click="loginWithKakao()"><img src="img/btn-kakao_login.png" width="100%" /></div-->
+			<div class="naver-login"><button class="button" ng-click=""><img src="img/logo-naver.png" />네이버 아이디로 로그인</button></div>
+			<div class="facebook-login"><button class="button" ng-click=""><img src="img/logo-facebook.png" />페이스북 아이디로 로그인</button></div>
+		</div>
+	</ion-content>
+</ion-view>

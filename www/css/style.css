@@ -1,0 +1,127 @@
+/* Empty. Add your own CSS if you like */
+.bold {
+	font-weight: bold;
+}
+
+.bar.ongr-bar-energized {
+	background-color:#FDB514;
+}
+
+.ongr-mainheader.bar .title.title-left {
+	/*text-align: center;*/
+} 
+
+.title-image {
+	margin-top: 10px;
+	padding-right: 50px;
+	height: 22px;
+	text-align: center;
+}
+
+.ongr-tabmenu-top a.tab-item-active,
+.ongr-tabmenu-top a.tab-item.activated
+ {
+	color:#FDB514 !important;
+	border-color:#FDB514 !important;
+}
+
+.ongr-tabmenu-top span.tab-title {
+	padding-left: 5px;
+	font-size: 130%;
+}
+
+.ongr-sidemenu-left .bar-header {
+	height: 200px;
+}
+
+.ongr-sidemenu-left .has-header {
+	top: 200px;
+}
+
+.ongr-sidemenu-left .wrap-loginer-image {
+	width: 100%;
+	height: 100%;
+	text-align: center;
+}
+
+.ongr-sidemenu-left .wrap-loginer-image img {
+	margin-top:50px;
+	height: 60px;
+}
+
+.ongr-sidemenu-left .wrap-loginer-image h5 {
+	color: #d0d0d0;
+}
+
+.ongr-sidemenu-left .ongr-button-login .item {
+	border: 0px;
+}
+
+.ongr-sidemenu-left .ongr-button-login .item a.item-content {
+	color:#FFF;
+	background-color: #FDB514;
+	font-weight: bold;
+	padding: 20px;
+	text-align: center;
+}
+
+
+
+/* 로그인 페이지 ongr-loginpage */
+.ongr_login-page div.ongr_top-iamge {
+	background-color:#f8f8f8;
+	padding: 30px 0px 20px 0px;
+	text-align: center;
+	margin-bottom: 15px;
+	border-bottom: 1px solid #ddd;
+
+}
+
+.ongr_login-page div.ongr_top-iamge img {
+	height: 60px;
+}
+
+.ongr_login-page div.ongr_top-iamge h5 {
+	color: #d0d0d0;
+}
+
+.ongr_login-page .wrap_login-form {
+	margin-bottom: 15px;
+}
+
+.ongr_login-page .wrap_login-button {
+	padding: 0px 10px;
+}
+
+.ongr_login-page .wrap_login-button div {
+	margin: 10px 0px;
+}
+
+.ongr_login-page .wrap_login-button div button {
+	width:100%;
+	height: 50px;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.ongr_login-page .wrap_login-button div button img {
+	width: 20px;
+	margin-right:10px;
+	vertical-align: middle;
+	padding-bottom: 2px;
+}
+
+.ongr_login-page .kakao-login button {
+	background-color: #FFDE00;
+	color: #3C1E1E;
+}
+
+.ongr_login-page .naver-login button {
+	background-color: #1EC800;
+	color: #fff;
+}
+
+.ongr_login-page .facebook-login button {
+	background-color: #3B579D;
+	color: #fff
+}
