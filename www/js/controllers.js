@@ -47,12 +47,17 @@ angular.module('starter.controllers', [])
   };
 })
 
-.controller('MydiaryCtrl', function($scope, $stateParams, $http) {
+.controller('MydiaryCtrl', function($scope, $stateParams, $http, $localstorage) {
 
   //var uu = window.device.uuid;
 
   $scope.checkState = function(){
 
+      $scope.uuid = $localstorage.get('uuid');
+      $scope.token = $localstorage.get('db_token');
+
+
+/*
     var req = 
     {
         method: 'POST',
@@ -73,7 +78,7 @@ angular.module('starter.controllers', [])
     {
       alert('에러');
     });
-
+*/
   };
 
 })

@@ -4,9 +4,9 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers'])
+angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, $http, $localstorage) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -20,8 +20,36 @@ angular.module('starter', ['ionic', 'starter.controllers'])
       StatusBar.styleDefault();
     }
 
-    //var uuid = window.device.uuid;
-    //alert(uuid);
+    // uuid/db_token 초기화 통신
+    // 앱실행후 무조건 새로운 토큰으로 새로 생성
+
+    var uuid = window.device.uuid;
+    $localstorage.set('uuid', uuid);  //기기id
+
+    var req = 
+    {
+        method: 'POST',
+        url: "http://www.ongrongr.com/ionic/bbs/first.check.php",
+        data: {uuid : uuid}
+    }
+
+    $http(req).
+    success(function(data) 
+    {
+      if(data.resultcode == 00) {
+        $localstorage.set('db_token', data.response.token);
+      } else {
+        alert('초기화 통신 에러입니다.');
+        navigator.app.exitApp();
+      }
+
+
+    }).
+    error(function(data) 
+    {
+      alert('초기화 통신 에러입니다.');
+      navigator.app.exitApp();
+    });
   });
 })
 
