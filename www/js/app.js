@@ -6,7 +6,7 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
-.run(function($ionicPlatform, $http, $localstorage) {
+.run(function($ionicPlatform, $http, $localstorage, SERVER_AUTH) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -20,9 +20,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       StatusBar.styleDefault();
     }
 
-    // uuid/db_token 초기화 통신
-    // 앱실행후 무조건 새로운 토큰으로 새로 생성
+    // 서버와 통신하는 constant KEY
+    var server_key = SERVER_AUTH.KEY;
 
+    // uuid/db_token 초기화 통신    
+    // 앱실행후 무조건 새로운 토큰으로 새로 생성
     var uuid = window.device.uuid;
     $localstorage.set('uuid', uuid);  //기기id
 
@@ -30,14 +32,17 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
     {
         method: 'POST',
         url: "http://www.ongrongr.com/ionic/bbs/first.check.php",
-        data: {uuid : uuid}
+        data: {
+          uuid : uuid,
+          server_key : server_key
+        }
     }
 
     $http(req).
     success(function(data) 
     {
       if(data.resultcode == 00) {
-        $localstorage.set('db_token', data.response.token);
+        $localstorage.set('server_token', data.response.token);
       } else {
         alert('초기화 통신 에러입니다.');
         navigator.app.exitApp();

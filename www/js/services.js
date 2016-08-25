@@ -4,6 +4,10 @@ angular.module('starter.services', [])
   LOGIN_DATA : {}
 })
 
+.constant('SERVER_AUTH', {
+  KEY : "287bb64051ec0f5664b1088d9ad5690c"
+})
+
 //localStorage 사용을 위한 셋팅
 .factory('$localstorage', ['$window', function($window) {
   return {

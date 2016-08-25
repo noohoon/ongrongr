@@ -54,7 +54,7 @@ angular.module('starter.controllers', [])
   $scope.checkState = function(){
 
       $scope.uuid = $localstorage.get('uuid');
-      $scope.token = $localstorage.get('db_token');
+      $scope.token = $localstorage.get('server_token');
 
 
 /*
