@@ -25,18 +25,32 @@ angular.module('starter.controllers', [])
   ];
 })
 
-.controller('LoginCtrl', function($scope, $stateParams) {
+.controller('LoginCtrl', function($scope, $stateParams, $localstorage) {
 
   $scope.loginWithKakao = function () {
     
     KakaoTalk.login(
         function (result) {
+
           alert('Success login!');
+
+          var authData = {};
+          authData.loginType = "kakao";
+          authData.loginId = "k_" + result.id;
+          authData.name = result.nickname;
+          authData.nickname = result.nickname;
+          authData.accessToken = result.accessToken;
+          authData.profile_image = result.profile_image;
+
+          $localstorage.setObject("authData", authData);
+
+          /*
           alert(result.accessToken);
           alert(result.id);
           alert(result.nickname);
           alert(result.profile_image);
           alert(result.thumbnail_image);
+          */
         },
         function (message) {
           alert('Error login!');
@@ -55,6 +69,8 @@ angular.module('starter.controllers', [])
 
       $scope.uuid = $localstorage.get('uuid');
       $scope.token = $localstorage.get('server_token');
+
+      $scope.authData = $localstorage.getObject("authData");
 
 
 /*

@@ -20,13 +20,41 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       StatusBar.styleDefault();
     }
 
-    // 서버와 통신하는 constant KEY
+    // SH. 서버와 통신하는 constant KEY
     var server_key = SERVER_AUTH.KEY;
 
-    // uuid/db_token 초기화 통신    
-    // 앱실행후 무조건 새로운 토큰으로 새로 생성
+    // SH. uuid 저장
     var uuid = window.device.uuid;
-    $localstorage.set('uuid', uuid);  //기기id
+    $localstorage.set('uuid', uuid);
+
+
+    checkServerSession(uuid, server_key);
+
+    // SH. 백그라운드로 있다가 다시 실행될 때
+    // server_token 갱신
+    $ionicPlatform.on('resume', function() {
+      checkServerSession(uuid, server_key);
+    });
+
+  });
+
+  function checkSnsSession() {
+    /*
+    KakaoTalk.session(
+        function (result) {
+          console.log('Success session!');
+          console.log(result);
+        },
+        function (message) {
+          console.log('Error session!');
+          console.log(message);
+        }
+    );
+    */
+  }
+
+  // 서버와 첫번째 동신하고 권한 토큰을 리시브하는 function
+  function checkServerSession(uuid, server_key) {
 
     var req = 
     {
@@ -44,7 +72,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       if(data.resultcode == 00) {
         $localstorage.set('server_token', data.response.token);
       } else {
-        alert('초기화 통신 에러입니다.');
+        alert('초기화 통신 에러입니다. resultcode');
         navigator.app.exitApp();
       }
 
@@ -52,10 +80,14 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
     }).
     error(function(data) 
     {
-      alert('초기화 통신 에러입니다.');
+      alert('초기화 통신 에러입니다. 진짜 통신 안됨');
       navigator.app.exitApp();
     });
-  });
+
+
+  }
+
+
 })
 
 .config(function($stateProvider, $urlRouterProvider) {

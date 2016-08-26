@@ -1,2 +1,5 @@
 [0823/171949:ERROR:exception_handler_server.cc(504)] failed to open 11392
 [0823/171949:ERROR:registration_protocol_win.cc(82)] TransactNamedPipe: 파이프의 다른 끝에 프로세스가 없습니다. (0xE9)
+[0826/144843:ERROR:exception_handler_server.cc(504)] failed to open 11860
+[0826/145009:ERROR:exception_handler_server.cc(504)] failed to open 1188
+[0826/150254:ERROR:exception_handler_server.cc(504)] failed to open 5572
