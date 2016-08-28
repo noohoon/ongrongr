@@ -5,7 +5,15 @@ angular.module('starter.services', [])
 })
 
 .constant('SERVER_AUTH', {
-  KEY : "287bb64051ec0f5664b1088d9ad5690c"
+  KEY : "287bb64051ec0f5664b1088d9ad5690c",
+  NAVER : {
+    CLIENT_ID : 'J_4XJrvomzG0JapSDpMi',
+    CLIENT_SECRET : 'rPqMTGvdCL',
+    REDIRECT_URL : 'http://www.ongrongr.com/ionic/bbs/naver_redirect_url.php',
+    AUTHORIZE_URL : 'https://nid.naver.com/oauth2.0/authorize',
+    TOKEN_URL : 'https://nid.naver.com/oauth2.0/token',
+    PROFILE_URL : 'https://openapi.naver.com/v1/nid/me'
+  }
 })
 
 //localStorage 사용을 위한 셋팅
@@ -64,25 +72,5 @@ angular.module('starter.services', [])
     }
 
   }
-
-})
-
-
-.service('$naverLoginService', function() {
-  var NAVER_client_id = 'uYifyirfJkB4BzHzrCAo';
-  var NAVER_client_secret = 'dMKyrWzrLY';
-  var NAVER_redirect_uri = 'http://www.ongrongr.com/ionic/naverLogin.php';
-  var NAVER_authorize_url = 'https://nid.naver.com/oauth2.0/authorize';
-  var NAVER_token_url = 'https://nid.naver.com/oauth2.0/token';
-  var NAVER_profile_url = 'https://openapi.naver.com/v1/nid/me';
-
-  return {
-    NAVER_client_id : NAVER_client_id,
-    NAVER_client_secret : NAVER_client_secret,
-    NAVER_redirect_uri : NAVER_redirect_uri,
-    NAVER_authorize_url : NAVER_authorize_url,
-    NAVER_token_url : NAVER_token_url,
-    NAVER_profile_url : NAVER_profile_url
-  };
 
 });
