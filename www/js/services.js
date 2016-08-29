@@ -59,7 +59,158 @@ angular.module('starter.services', [])
 
       return params;
     },
+/*
+    getNaverAccessToken: function(code, state) {
+      var result = {};
 
+      var token_url = SERVER_AUTH.NAVER.TOKEN_URL + "?grant_type=authorization_code&client_id=" + SERVER_AUTH.NAVER.CLIENT_ID + "&client_secret=" + SERVER_AUTH.NAVER.CLIENT_SECRET + "&code=" + code + "&state=" + state;
+
+      var req = 
+      {
+          method: 'GET',
+          url: token_url
+      }
+
+      $http(req).
+      success(function(data) 
+      {
+        
+        if(data.access_token) {
+
+          getNaverProfile(data.access_token, data.refresh_token);
+
+          result.resultcode = "00";
+          result.message = "access token 조회 성공";
+          result.response.access_token = data.access_token;
+          result.response.refresh_token = data.refresh_token;
+          return result;
+
+
+        } else {
+          result.resultcode = "01";
+          result.message = "네이버 access token 조회 에러!!! 에러코드 : " + data.error + " 에러메세지 : " + data.error_description;
+          return result;
+        }
+      }).
+      error(function(data) 
+      {
+        result.resultcode = "01";
+        result.message = "네이버 access token 조회시 통신 에러입니다.";
+        return result;
+      });
+
+
+    },
+    
+    getNaverProfile: function(access_token, refresh_token) {
+
+        var result = {};
+
+        var req = 
+        {
+            method: 'GET',
+            url: SERVER_AUTH.NAVER.PROFILE_URL,
+            headers: {
+              Authorization : "Bearer " + access_token
+            }
+        }
+
+        $http(req).
+        success(function(data) 
+        {
+
+          if(data.resultcode == 00) {
+
+            var auth_data = {};
+            auth_data.loginType = "naver";
+            auth_data.id = data.response.id;
+            auth_data.loginId = "n_" + data.response.id;
+            auth_data.name = data.response.name;
+            auth_data.nickname = data.response.nickname;
+            auth_data.profile_image = data.response.profile_image;
+            auth_data.email = data.response.email;
+            auth_data.accessToken = access_token;
+            auth_data.refreshToken = refresh_token;
+
+            result.resultcode = "00";
+            result.message = "프로필 조회 성공";
+            result.response = auth_data;
+            return result;
+
+          } else {
+            result.resultcode = "01";
+            result.message = "네이버 프로필 조회시 출력 에러입니다.";
+            return result;
+          }
+        }).
+        error(function(data) 
+        {
+          result.resultcode = "01";
+          result.message = "네이버 프로필 조회 통신 에러입니다.";
+          return result;
+        });
+      },
+
+      checkLoginInfo: function(auth_data) {
+
+        var result = {};
+        var uuid = $localstorage.get('uuid');
+        var server_key = SERVER_AUTH.KEY;
+        var server_token = $localstorage.get('server_token');
+
+        if(server_key && server_token) {
+
+          var req = 
+          {
+              method: 'POST',
+              url: "http://www.ongrongr.com/ionic/bbs/check_login_info.php",
+              data: {
+                uuid : uuid,
+                server_key : server_key,
+                server_token : server_token,
+                auth_data : auth_data
+              }
+          }
+
+          $http(req).
+          success(function(data) 
+          {
+            if(data.resultcode == 00) {
+
+              var db_auth_data = data.response;
+              db_auth_data.accessToken = auth_data.accessToken;
+              db_auth_data.refreshToken = auth_data.refreshToken;
+              db_auth_data.loginTime = new Date().getTime();
+
+              $localstorage.setObject("auth_data", db_auth_data);
+
+              result.resultcode = "00";
+              result.message = "로그인 성공";
+              return result;
+
+            } else {
+              result.resultcode = "01";
+              result.message = "옹알옹알 로그인 체크시 출력 에러입니다.";
+              return result;
+            }
+
+
+          }).
+          error(function(data) 
+          {
+            result.resultcode = "01";
+            result.message = "옹알옹알 로그인 조회 통신 에러입니다.";
+            return result;
+
+          });
+
+
+
+        }
+
+
+      },
+*/
     /**
      * SH.
      * 네이버 ID로 로그인에 필요한 state값 추출

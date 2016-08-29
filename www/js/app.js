@@ -29,28 +29,72 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
 
     checkServerSession(uuid, server_key);
+    checkLoginSession();
 
     // SH. 백그라운드로 있다가 다시 실행될 때
     // server_token 갱신
     $ionicPlatform.on('resume', function() {
       checkServerSession(uuid, server_key);
+      checkLoginSession();
     });
 
   });
 
-  function checkSnsSession() {
-    /*
-    KakaoTalk.session(
-        function (result) {
-          console.log('Success session!');
-          console.log(result);
-        },
-        function (message) {
-          console.log('Error session!');
-          console.log(message);
+  function checkLoginSession() {
+    var auth_data = $localstorage.getObject("auth_data");
+    var now_time = new Date().getTime();
+
+    if( (now_time - auth_data.loginTime)/1000 > 3000) {
+
+      if(auth_data.loginType === "kakao"){
+
+        KakaoTalk.session(
+            function (result) {
+              alert('Success session!');
+            },
+            function (message) {
+              alert('Error session!');
+            }
+        );
+
+
+      } else if (auth_data.loginType === "naver") {
+/*
+        var token_url = SERVER_AUTH.NAVER.TOKEN_URL + "?grant_type=refresh_token&client_id=" + SERVER_AUTH.NAVER.CLIENT_ID + "&client_secret=" + SERVER_AUTH.NAVER.CLIENT_SECRET + "&refresh_token=" + auth_data.refreshToken;
+
+        var req = 
+        {
+            method: 'GET',
+            url: token_url
         }
-    );
-    */
+
+        $http(req).
+        success(function(data) 
+        {
+          
+          if(data.access_token) {
+            getNaverProfile(data.access_token, auth_data.refreshToken);
+          } else {
+            alert("네이버 로그인 에러!!!\n에러코드 : " + data.error + "\n에러메세지 : " + data.error_description);
+          }
+
+
+        }).
+        error(function(data) 
+        {
+          alert('네이버 통신 에러입니다. access token 조회');
+        });
+
+*/
+      } else if (auth_data.loginType === "facebook") {
+
+      } else {
+
+      }
+
+    }
+
+
   }
 
   // 서버와 첫번째 동신하고 권한 토큰을 리시브하는 function
@@ -59,7 +103,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
     var req = 
     {
         method: 'POST',
-        url: "http://www.ongrongr.com/ionic/bbs/first.check.php",
+        url: "http://www.ongrongr.com/ionic/bbs/check_first.php",
         data: {
           uuid : uuid,
           server_key : server_key
@@ -72,7 +116,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       if(data.resultcode == 00) {
         $localstorage.set('server_token', data.response.token);
       } else {
-        alert('초기화 통신 에러입니다. resultcode');
+        alert('초기화 통신 에러입니다. \nResult Code : ' + data.resultcode + '\nMessage : ' + data.message);
         navigator.app.exitApp();
       }
 

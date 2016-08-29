@@ -34,27 +34,19 @@ angular.module('starter.controllers', [])
 
           alert('Success login!');
 
-          var authData = {};
-          authData.loginType = "kakao";
-          authData.id = result.id;
-          authData.loginId = "k_" + result.id;
-          authData.name = result.nickname;
-          authData.nickname = result.nickname;
-          authData.profile_image = result.profile_image;
-          authData.email = '';
-          authData.accessToken = result.accessToken;
-          authData.refreshToken = '';
+          var auth_data = {};
+          auth_data.loginType = "kakao";
+          auth_data.id = result.id;
+          auth_data.loginId = "k_" + result.id;
+          auth_data.name = result.nickname;
+          auth_data.nickname = result.nickname;
+          auth_data.profile_image = result.profile_image;
+          auth_data.email = '';
+          auth_data.accessToken = result.accessToken;
+          auth_data.refreshToken = '';
 
+          checkLoginInfo(auth_data);
 
-          $localstorage.setObject("authData", authData);
-
-          /*
-          alert(result.accessToken);
-          alert(result.id);
-          alert(result.nickname);
-          alert(result.profile_image);
-          alert(result.thumbnail_image);
-          */
         },
         function (message) {
           alert('Error login!');
@@ -146,18 +138,18 @@ angular.module('starter.controllers', [])
 
         if(data.resultcode == 00) {
 
-          var authData = {};
-          authData.loginType = "naver";
-          authData.id = data.response.id;
-          authData.loginId = "n_" + data.response.id;
-          authData.name = data.response.name;
-          authData.nickname = data.response.nickname;
-          authData.profile_image = data.response.profile_image;
-          authData.email = data.response.email;
-          authData.accessToken = access_token;
-          authData.refreshToken = refresh_token;
+          var auth_data = {};
+          auth_data.loginType = "naver";
+          auth_data.id = data.response.id;
+          auth_data.loginId = "n_" + data.response.id;
+          auth_data.name = data.response.name;
+          auth_data.nickname = data.response.nickname;
+          auth_data.profile_image = data.response.profile_image;
+          auth_data.email = data.response.email;
+          auth_data.accessToken = access_token;
+          auth_data.refreshToken = refresh_token;
 
-          $localstorage.setObject("authData", authData);
+          checkLoginInfo(auth_data);
 
         } else {
           alert("네이버 로그인 에러!!!\n에러코드 : " + data.error + "\n에러메세지 : " + data.error_description);
@@ -172,12 +164,12 @@ angular.module('starter.controllers', [])
 
   } //$scope.loginWithNaver = function ()
 
-//  var checkLoginInfo = function(authData) {
-  $scope.checkLoginInfo = function() {
+  var checkLoginInfo = function(auth_data) {
+//  $scope.checkLoginInfo = function() {
 
+    var uuid = $localstorage.get('uuid');
     var server_key = SERVER_AUTH.KEY;
     var server_token = $localstorage.get('server_token');
-    var auth_data = $localstorage.getObject("authData");
 
     if(server_key && server_token) {
 
@@ -186,6 +178,7 @@ angular.module('starter.controllers', [])
           method: 'POST',
           url: "http://www.ongrongr.com/ionic/bbs/check_login_info.php",
           data: {
+            uuid : uuid,
             server_key : server_key,
             server_token : server_token,
             auth_data : auth_data
@@ -196,15 +189,18 @@ angular.module('starter.controllers', [])
       success(function(data) 
       {
         if(data.resultcode == 00) {
-          alert(data.response.loginType);
-          alert(data.response.id);
-          alert(data.response.loginId);
-          alert(data.response.name);
-          alert(data.response.nickname);
-          alert(data.response.profile_image);
-          alert(data.response.email);
+
+          alert('로그인 성공');
+
+          var db_auth_data = data.response;
+          db_auth_data.accessToken = auth_data.accessToken;
+          db_auth_data.refreshToken = auth_data.refreshToken;
+          db_auth_data.loginTime = new Date().getTime();
+
+          $localstorage.setObject("auth_data", db_auth_data);
+
         } else {
-          alert('통신 에러입니다. resultcode');
+          alert('통신 에러입니다. Result Code');
         }
 
 
@@ -232,7 +228,7 @@ angular.module('starter.controllers', [])
       $scope.uuid = $localstorage.get('uuid');
       $scope.token = $localstorage.get('server_token');
 
-      $scope.authData = $localstorage.getObject("authData");
+      $scope.auth_data = $localstorage.getObject("auth_data");
 
 
 /*
