@@ -35,6 +35,115 @@ angular.module('starter.services', [])
 
 }])
 
+.factory('$loginFunction', function($http, $localstorage, SERVER_AUTH) {
+
+  return {
+
+    // 서버와 첫번째 동신하고 권한 토큰을 리시브하는 function
+    checkServerToken: function() {
+
+      var req = 
+      {
+          method: 'POST',
+          url: "http://www.ongrongr.com/ionic/bbs/check_first.php",
+          data: {
+            uuid : $localstorage.get('uuid'),
+            server_key : SERVER_AUTH.KEY
+          }
+      }
+
+      return $http(req).then(function(res) {
+        return res.data;
+      });
+
+    },
+
+
+    getNaverNewAccessToken: function(code, state) {
+
+      var token_url = SERVER_AUTH.NAVER.TOKEN_URL + "?grant_type=authorization_code&client_id=" + SERVER_AUTH.NAVER.CLIENT_ID + "&client_secret=" + SERVER_AUTH.NAVER.CLIENT_SECRET + "&code=" + code + "&state=" + state;
+
+      var req = 
+      {
+          method: 'GET',
+          url: token_url
+      }
+
+      return $http(req).then(function(res) {
+
+        return res.data;
+
+      });
+
+
+    },  //getNaverNewAccessToken: function(code, state) {
+
+    getNaverReAccessToken: function(refresh_token) {
+      var token_url = SERVER_AUTH.NAVER.TOKEN_URL + "?grant_type=refresh_token&client_id=" + SERVER_AUTH.NAVER.CLIENT_ID + "&client_secret=" + SERVER_AUTH.NAVER.CLIENT_SECRET + "&refresh_token=" + refresh_token;
+
+      var req = 
+      {
+          method: 'GET',
+          url: token_url
+      }
+
+      return $http(req).then(function(res) {
+
+        return res.data;
+
+      });
+    },  //getNaverReAccessToken: function(refresh_token) {
+
+    getNaverProfile: function(access_token) {
+
+      var req = 
+      {
+          method: 'GET',
+          url: SERVER_AUTH.NAVER.PROFILE_URL,
+          headers: {
+            Authorization : "Bearer " + access_token
+          }
+      }
+
+      return $http(req).then(function(res) {
+
+        return res.data;
+
+      });
+
+    }, //getNaverProfile: function(access_token) {
+
+
+    setLoginInfo: function(auth_data) {
+
+      var uuid = $localstorage.get('uuid');
+      var server_key = SERVER_AUTH.KEY;
+      var server_token = $localstorage.get('server_token');
+
+      var req = 
+      {
+          method: 'POST',
+          url: "http://www.ongrongr.com/ionic/bbs/check_login_info.php",
+          data: {
+            uuid : uuid,
+            server_key : server_key,
+            server_token : server_token,
+            auth_data : auth_data
+          }
+      }
+
+      return $http(req).then(function(res) {
+
+        return res.data;
+
+      });
+
+    } //getNaverProfile: function(access_token) {
+
+  } //return {
+
+})
+
 .factory('$commonFunction', function() {
   return {
 

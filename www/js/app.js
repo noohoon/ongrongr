@@ -6,7 +6,7 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
-.run(function($ionicPlatform, $http, $localstorage, SERVER_AUTH) {
+.run(function($ionicPlatform, $http, $localstorage, $loginFunction, SERVER_AUTH) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -27,30 +27,91 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
     var uuid = window.device.uuid;
     $localstorage.set('uuid', uuid);
 
+    var check_server_token = $loginFunction.checkServerToken();
+    check_server_token.then(function(res_server){
 
-    checkServerSession(uuid, server_key);
-    checkLoginSession();
+      if(res_server.resultcode == "00") {
+        $localstorage.set('server_token', res_server.response.token);
+
+        checkLoginSession();
+      } else {
+        alert('초기화 통신 에러입니다. \nResult Code : ' + res_server.resultcode + '\nMessage : ' + res_server.message);
+        navigator.app.exitApp();
+      }
+
+    });
 
     // SH. 백그라운드로 있다가 다시 실행될 때
     // server_token 갱신
     $ionicPlatform.on('resume', function() {
-      checkServerSession(uuid, server_key);
-      checkLoginSession();
+
+      var check_server_token = $loginFunction.checkServerToken();
+      check_server_token.then(function(res_server){
+
+        if(res_server.resultcode == "00") {
+          $localstorage.set('server_token', res_server.response.token);
+          
+          checkLoginSession();
+        } else {
+          alert('초기화 통신 에러입니다. \nResult Code : ' + res_server.resultcode + '\nMessage : ' + res_server.message);
+          navigator.app.exitApp();
+        }
+
+      });
+
+
     });
 
   });
 
+  // 로그인 세션 체크후 세션 갱신
   function checkLoginSession() {
-    var auth_data = $localstorage.getObject("auth_data");
-    var now_time = new Date().getTime();
+    
+    if( (now_time - auth_data.loginTime)/1000 > 3599) {
 
-    if( (now_time - auth_data.loginTime)/1000 > 3000) {
+      var auth_data = $localstorage.getObject("auth_data");
+      var now_time = new Date().getTime();
 
       if(auth_data.loginType === "kakao"){
 
         KakaoTalk.session(
             function (result) {
-              alert('Success session!');
+              //alert('Success session!');
+
+
+              var new_auth_data = {};
+              new_auth_data.loginType = "kakao";
+              new_auth_data.id = result.id;
+              new_auth_data.loginId = "n_" + result.id;
+              new_auth_data.name = result.nickname;
+              new_auth_data.nickname = result.nickname;
+              new_auth_data.profile_image = result.profile_image;
+              new_auth_data.email = '';
+              new_auth_data.accessToken = result.accessToken;
+              new_auth_data.refreshToken = '';
+
+              //alert("Login ID : " + new_auth_data.loginId + "\n이름 : " + new_auth_data.name + "\n별명 : " + new_auth_data.nickname + "\n이메일 : " + new_auth_data.email + "\n프로필사진 주소 : " + new_auth_data.profile_image);
+              // 로그인 정보 DB 추출 통신
+              var set_login_info = $loginFunction.setLoginInfo(new_auth_data);
+              set_login_info.then(function(res_l){
+
+                if(res_l.resultcode == "00") {
+
+                  var db_auth_data = res_l.response;
+                  db_auth_data.accessToken = result.accessToken;
+                  db_auth_data.refreshToken = "";
+                  db_auth_data.loginTime = new Date().getTime();
+
+                  //alert("Login ID : " + db_auth_data.loginId + "\n이름 : " + db_auth_data.name + "\n별명 : " + db_auth_data.nickname + "\n이메일 : " + db_auth_data.email + "\n프로필사진 주소 : " + db_auth_data.profile_image + "\nAccess Token : " + db_auth_data.accessToken);
+                  $localstorage.setObject("auth_data", db_auth_data);
+
+
+                } else {
+                  alert('옹알옹알 로그인 정보 통신 에러입니다. Result Code\n' + res_l.resultcode + '\n' + res_l.message);
+                }
+
+              });
+
             },
             function (message) {
               alert('Error session!');
@@ -59,78 +120,72 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
 
       } else if (auth_data.loginType === "naver") {
-/*
-        var token_url = SERVER_AUTH.NAVER.TOKEN_URL + "?grant_type=refresh_token&client_id=" + SERVER_AUTH.NAVER.CLIENT_ID + "&client_secret=" + SERVER_AUTH.NAVER.CLIENT_SECRET + "&refresh_token=" + auth_data.refreshToken;
 
-        var req = 
-        {
-            method: 'GET',
-            url: token_url
-        }
+        // 로그인 access token 갱신 통신
+        var get_naver_re_access_token = $loginFunction.getNaverReAccessToken(auth_data.refreshToken);
+        get_naver_re_access_token.then(function(res_t) {
 
-        $http(req).
-        success(function(data) 
-        {
-          
-          if(data.access_token) {
-            getNaverProfile(data.access_token, auth_data.refreshToken);
+          if(res_t.access_token) {
+
+            // 네이버 프로필 정보 통신
+            var get_naver_profile = $loginFunction.getNaverProfile(res_t.access_token);
+            get_naver_profile.then(function(res_p) {
+
+              if(res_p.resultcode === "00") {
+
+                var new_auth_data = {};
+                new_auth_data.loginType = "naver";
+                new_auth_data.id = res_p.response.id;
+                new_auth_data.loginId = "n_" + res_p.response.id;
+                new_auth_data.name = res_p.response.name;
+                new_auth_data.nickname = res_p.response.nickname;
+                new_auth_data.profile_image = res_p.response.profile_image;
+                new_auth_data.email = res_p.response.email;
+                new_auth_data.accessToken = res_t.access_token;
+                new_auth_data.refreshToken = auth_data.refreshToken;
+
+                // 로그인 정보 DB 추출 통신
+                var set_login_info = $loginFunction.setLoginInfo(new_auth_data);
+                set_login_info.then(function(res_l){
+
+                  if(res_l.resultcode == "00") {
+
+                    var db_auth_data = res_l.response;
+                    db_auth_data.accessToken = res_t.access_token;
+                    db_auth_data.refreshToken = auth_data.refreshToken;
+                    db_auth_data.loginTime = new Date().getTime();
+
+                    //alert("Login ID : " + db_auth_data.loginId + "\n이름 : " + db_auth_data.name + "\n별명 : " + db_auth_data.nickname + "\n이메일 : " + db_auth_data.email + "\n프로필사진 주소 : " + db_auth_data.profile_image);
+                    $localstorage.setObject("auth_data", db_auth_data);
+
+
+                  } else {
+                    alert('옹알옹알 로그인 정보 통신 에러입니다. Result Code');
+                  }
+
+                });
+
+              } else {
+                alert("네이버 프로필 조회 에러!!!\n에러 : " + res_p.message);
+              }
+
+            });
+
           } else {
-            alert("네이버 로그인 에러!!!\n에러코드 : " + data.error + "\n에러메세지 : " + data.error_description);
+            alert("네이버 Access Token 갱신 에러!!!\n에러코드 : " + res_t.error + "\n에러메세지 : " + res_t.error_description);
           }
 
-
-        }).
-        error(function(data) 
-        {
-          alert('네이버 통신 에러입니다. access token 조회');
         });
 
-*/
       } else if (auth_data.loginType === "facebook") {
 
       } else {
 
       }
 
-    }
-
-
-  }
-
-  // 서버와 첫번째 동신하고 권한 토큰을 리시브하는 function
-  function checkServerSession(uuid, server_key) {
-
-    var req = 
-    {
-        method: 'POST',
-        url: "http://www.ongrongr.com/ionic/bbs/check_first.php",
-        data: {
-          uuid : uuid,
-          server_key : server_key
-        }
-    }
-
-    $http(req).
-    success(function(data) 
-    {
-      if(data.resultcode == 00) {
-        $localstorage.set('server_token', data.response.token);
-      } else {
-        alert('초기화 통신 에러입니다. \nResult Code : ' + data.resultcode + '\nMessage : ' + data.message);
-        navigator.app.exitApp();
-      }
-
-
-    }).
-    error(function(data) 
-    {
-      alert('초기화 통신 에러입니다. 진짜 통신 안됨');
-      navigator.app.exitApp();
-    });
-
+    } //if( (now_time - auth_data.loginTime)/1000 > 1) {
 
   }
-
 
 })
 
