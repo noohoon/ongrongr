@@ -35,7 +35,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
         checkLoginSession();
       } else {
-        alert('초기화 통신 에러입니다. \nResult Code : ' + res_server.resultcode + '\nMessage : ' + res_server.message);
+        alert('초기화 통신 에러입니다. \nResult Code : ' + res_server + '\nMessage : ' + res_server.message);
         navigator.app.exitApp();
       }
 
@@ -45,15 +45,15 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
     // server_token 갱신
     $ionicPlatform.on('resume', function() {
 
-      var check_server_token = $loginFunction.checkServerToken();
-      check_server_token.then(function(res_server){
+      var re_check_server_token = $loginFunction.checkServerToken();
+      re_check_server_token.then(function(res_server){
 
         if(res_server.resultcode == "00") {
           $localstorage.set('server_token', res_server.response.token);
           
           checkLoginSession();
         } else {
-          alert('초기화 통신 에러입니다. \nResult Code : ' + res_server.resultcode + '\nMessage : ' + res_server.message);
+          alert('초기화 통신 에러입니다. \nResult Code : ' + res_server + '\nMessage : ' + res_server.message);
           navigator.app.exitApp();
         }
 
@@ -66,11 +66,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
   // 로그인 세션 체크후 세션 갱신
   function checkLoginSession() {
-    
-    if( (now_time - auth_data.loginTime)/1000 > 3599) {
 
-      var auth_data = $localstorage.getObject("auth_data");
-      var now_time = new Date().getTime();
+    var auth_data = $localstorage.getObject("auth_data");
+    var now_time = new Date().getTime();
+
+    if( (now_time - auth_data.loginTime)/1000 > 3599) {      
 
       if(auth_data.loginType === "kakao"){
 
@@ -82,7 +82,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
               var new_auth_data = {};
               new_auth_data.loginType = "kakao";
               new_auth_data.id = result.id;
-              new_auth_data.loginId = "n_" + result.id;
+              new_auth_data.loginId = "k_" + result.id;
               new_auth_data.name = result.nickname;
               new_auth_data.nickname = result.nickname;
               new_auth_data.profile_image = result.profile_image;
