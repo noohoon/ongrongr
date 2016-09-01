@@ -168,13 +168,62 @@ angular.module('starter.controllers', [])
 
   $scope.loginWithFacebook = function () {
 
-    alert('페이스북 통신');
+    var fbLoginSuccess = function (res_t) {
+      alert("UserInfo: " + JSON.stringify(res_t, null, 2));
 
-    var fbLoginSuccess = function (userData) {
-      alert("UserInfo: " + userData);
+      var user_id = res_t.authResponse.userID;
+      var access_token = res_t.authResponse.accessToken;
+
+      facebookConnectPlugin.api(
+        user_id + "/?fields=id,email,first_name,last_name,gender,age_range",
+        ['public_profile', 'email'],
+        function (res_f) {
+          //alert(JSON.stringify(res_f));
+
+          var new_auth_data = {};
+          new_auth_data.loginType = "facebook";
+          new_auth_data.id = res_f.id;
+          new_auth_data.loginId = "f_" + res_f.id;
+          new_auth_data.name = res_f.last_name + res_f.first_name;
+          new_auth_data.nickname = res_f.first_name;
+          new_auth_data.profile_image = "http://graph.facebook.com/" + res_f.id + "/picture?type=large";
+          new_auth_data.email = res_f.email;
+          new_auth_data.accessToken = access_token;
+          new_auth_data.refreshToken = '';
+
+          // 로그인 정보 DB 추출 통신
+          var set_login_info = $loginFunction.setLoginInfo(new_auth_data);
+          set_login_info.then(function(res_l){
+
+            if(res_l.resultcode == "00") {
+
+              var db_auth_data = res_l.response;
+              db_auth_data.accessToken = access_token;
+              db_auth_data.refreshToken = "";
+              db_auth_data.loginTime = new Date().getTime();
+
+              //alert("Login ID : " + db_auth_data.loginId + "\n이름 : " + db_auth_data.name + "\n별명 : " + db_auth_data.nickname + "\n이메일 : " + db_auth_data.email + "\n프로필사진 주소 : " + db_auth_data.profile_image + "\nAccess Token : " + db_auth_data.accessToken);
+              $localstorage.setObject("auth_data", db_auth_data);
+              alert('Success login!');
+
+            } else {
+              alert('옹알옹알 로그인 정보 통신 에러입니다. Result Code\n' + res_l.resultcode + '\n' + res_l.message);
+            }
+
+          });
+
+
+
+        },
+        function (error) {
+            alert("Failed: " + error);
+        }
+      );
+
     }
 
-    facebookConnectPlugin.login(["public_profile"], fbLoginSuccess,
+
+    facebookConnectPlugin.login(['public_profile', 'email'], fbLoginSuccess,
       function loginError (error) {
         alert(error);
       }
