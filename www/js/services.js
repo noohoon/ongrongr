@@ -35,6 +35,63 @@ angular.module('starter.services', [])
 
 }])
 
+
+
+
+
+
+.service('$authService', function($rootScope, $http, $localstorage) {
+
+//  var uuid = window.device.uuid;
+  var uuid = '123456';
+  var SERVER_KEY = '287bb64051ec0f5664b1088d9ad5690c';
+  var server_token = '';
+  var is_login = false;
+  var auth_data = [];
+
+  var storeAuthData = function(auth_data) {
+    //$localstorage.setObject("auth_data", auth_data);
+    is_login = true;
+    $rootScope.$broadcast('login');
+  };
+
+  var checkServerToken = function(){
+    var req = 
+    {
+        method: 'POST',
+        url: "http://www.ongrongr.com/ionic/bbs/check_first.php",
+        data: {
+          uuid : uuid,
+          server_key : SERVER_KEY
+        }
+    }
+
+    $http(req).then(function(res) {
+
+      alert(JSON.stringify(res, null, 2));
+      server_token = res.data.token;
+
+    },function(res){
+      alert('통신에러!!!');
+    });
+
+  };
+
+  return {
+    storeAuthData : storeAuthData,
+    checkServerToken : checkServerToken,
+    isLogin : function() { return is_login; },
+    getUuid : function() { return uuid; },
+    getServerToken : function() { return server_token; }
+
+  }
+})
+
+
+
+
+
+
 .factory('$loginFunction', function($http, $localstorage, SERVER_AUTH) {
 
   return {
@@ -53,6 +110,8 @@ angular.module('starter.services', [])
       }
 
       return $http(req).then(function(res) {
+        return res.data;
+      },function(res){
         return res.data;
       });
 

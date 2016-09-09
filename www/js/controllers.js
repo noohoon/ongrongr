@@ -1,6 +1,6 @@
 angular.module('starter.controllers', [])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout, $ionicHistory) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout, $ionicHistory, $localstorage, $authService) {
 
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -11,6 +11,9 @@ angular.module('starter.controllers', [])
 
   $scope.devWidth = ((window.innerWidth > 0) ? window.innerWidth : screen.width);
 
+  $scope.$on('login', function(){
+      $scope.isLogin = $authService.isLogin;
+  });
 
 })
 
@@ -25,7 +28,11 @@ angular.module('starter.controllers', [])
   ];
 })
 
-.controller('LoginCtrl', function($scope, $stateParams, $http, $localstorage, $commonFunction, $loginFunction, SERVER_AUTH) {
+.controller('LoginCtrl', function($scope, $state, $stateParams, $http, $localstorage, $commonFunction, $loginFunction, SERVER_AUTH, $authService) {
+
+  if($authService.isLogin) {
+    $state.go('app.tabs.mydiary');
+  }
 
   $scope.loginWithKakao = function () {
     
@@ -249,16 +256,16 @@ angular.module('starter.controllers', [])
 
 })
 
-.controller('MydiaryCtrl', function($scope, $stateParams, $http, $localstorage) {
+.controller('MydiaryCtrl', function($rootScope, $scope, $stateParams, $http, $localstorage, $authService) {
 
   //var uu = window.device.uuid;
 
   $scope.checkState = function(){
 
-      $scope.uuid = $localstorage.get('uuid');
-      $scope.token = $localstorage.get('server_token');
+      $scope.uuid = $authService.getUuid();
+      $scope.token = $localstorage.getServerToken();
 
-      $scope.auth_data = $localstorage.getObject("auth_data");
+      $scope.auth_data = $localstorage.getAuthData();
 
 
 /*

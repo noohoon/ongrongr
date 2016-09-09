@@ -6,7 +6,7 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
-.run(function($ionicPlatform, $http, $localstorage, $loginFunction, SERVER_AUTH) {
+.run(function($ionicPlatform, $http, $localstorage, $loginFunction, SERVER_AUTH, $ionicPopup, $authService) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -20,6 +20,8 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       StatusBar.styleDefault();
     }
 
+    $authService.checkServerToken();
+/*
     // SH. 서버와 통신하는 constant KEY
     var server_key = SERVER_AUTH.KEY;
 
@@ -32,250 +34,29 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
       if(res_server.resultcode == "00") {
         $localstorage.set('server_token', res_server.response.token);
-
-        checkLoginSession();
       } else {
         alert('초기화 통신 에러입니다. \nResult Code : ' + res_server + '\nMessage : ' + res_server.message);
         navigator.app.exitApp();
       }
 
     });
-
+*/
     // SH. 백그라운드로 있다가 다시 실행될 때
-    // server_token 갱신
+    // 30분이상 되었으면 로그인 세션 관리 문제로 재실행 함
+    var start_time = new Date().getTime();
+
     $ionicPlatform.on('resume', function() {
 
-      var re_check_server_token = $loginFunction.checkServerToken();
-      re_check_server_token.then(function(res_server){
+      var resume_time = new Date().getTime();
 
-        if(res_server.resultcode == "00") {
-          $localstorage.set('server_token', res_server.response.token);
-          
-          checkLoginSession();
-        } else {
-          alert('초기화 통신 에러입니다. \nResult Code : ' + res_server + '\nMessage : ' + res_server.message);
-          navigator.app.exitApp();
-        }
-
-      });
-
+      //30분이상 resume상태이면 재실행
+      if((resume_time - start_time)/1000 > 1800) {
+        document.location.href = 'index.html';
+      }
 
     });
 
   });
-
-  // 로그인 세션 체크후 세션 갱신
-  function checkLoginSession() {
-
-    var auth_data = $localstorage.getObject("auth_data");
-    var now_time = new Date().getTime();
-
-    if( auth_data.loginType && (now_time - auth_data.loginTime)/1000 > 3599) {      
-
-      if(auth_data.loginType === "kakao"){
-
-        // sns으로 로그인 한 카톡(12-24시간)이나 페이스북(약 60일)은 access token 유효기간이 좀 길어서
-        // 유효기간을 대략 11.5시간으로 잡음
-        if((now_time - auth_data.loginTime)/1000 > 41400) {
-
-          KakaoTalk.login(
-            function (result) {
-              //alert('Success session!');
-
-              var new_auth_data = {};
-              new_auth_data.loginType = "kakao";
-              new_auth_data.id = result.id;
-              new_auth_data.loginId = "k_" + result.id;
-              new_auth_data.name = result.nickname;
-              new_auth_data.nickname = result.nickname;
-              new_auth_data.profile_image = result.profile_image;
-              new_auth_data.email = '';
-              new_auth_data.accessToken = result.accessToken;
-              new_auth_data.refreshToken = '';
-
-            },
-            function (message) {
-              alert('Error session!');
-            }
-          );    //KakaoTalk.session(
-
-        } else {  //if((now_time - auth_data.loginTime)/1000 > 41400) 로그인 유효기간이 11.5 시간이 지나지 않았을때에는 그냥 앱 localstorage값 이용
-
-          var new_auth_data = auth_data;
-
-        }         //if((now_time - auth_data.loginTime)/1000 > 41400)
-
-        //new_auth_data 변수에 정보를 입력했을때만 실행
-        if(new_auth_data.loginType) {
-
-          //alert("Login ID : " + new_auth_data.loginId + "\n이름 : " + new_auth_data.name + "\n별명 : " + new_auth_data.nickname + "\n이메일 : " + new_auth_data.email + "\n프로필사진 주소 : " + new_auth_data.profile_image);
-          // 로그인 정보 DB 추출 통신
-          var set_login_info = $loginFunction.setLoginInfo(new_auth_data);
-          set_login_info.then(function(res_l){
-
-            if(res_l.resultcode == "00") {
-
-              var db_auth_data = res_l.response;
-              db_auth_data.accessToken = result.accessToken;
-              db_auth_data.refreshToken = "";
-              db_auth_data.loginTime = new Date().getTime();
-
-              //alert("Login ID : " + db_auth_data.loginId + "\n이름 : " + db_auth_data.name + "\n별명 : " + db_auth_data.nickname + "\n이메일 : " + db_auth_data.email + "\n프로필사진 주소 : " + db_auth_data.profile_image + "\nAccess Token : " + db_auth_data.accessToken);
-              $localstorage.setObject("auth_data", db_auth_data);
-
-
-            } else {
-              alert('옹알옹알 로그인 정보 통신 에러입니다. Result Code\n' + res_l.resultcode + '\n' + res_l.message);
-            }
-
-          });
-
-        }     //if(new_auth_data.loginType)
-
-
-
-      } else if (auth_data.loginType === "naver") {
-
-        // 로그인 access token 갱신 통신
-        var get_naver_re_access_token = $loginFunction.getNaverReAccessToken(auth_data.refreshToken);
-        get_naver_re_access_token.then(function(res_t) {
-
-          if(res_t.access_token) {
-
-            // 네이버 프로필 정보 통신
-            var get_naver_profile = $loginFunction.getNaverProfile(res_t.access_token);
-            get_naver_profile.then(function(res_p) {
-
-              if(res_p.resultcode === "00") {
-
-                var new_auth_data = {};
-                new_auth_data.loginType = "naver";
-                new_auth_data.id = res_p.response.id;
-                new_auth_data.loginId = "n_" + res_p.response.id;
-                new_auth_data.name = res_p.response.name;
-                new_auth_data.nickname = res_p.response.nickname;
-                new_auth_data.profile_image = res_p.response.profile_image;
-                new_auth_data.email = res_p.response.email;
-                new_auth_data.accessToken = res_t.access_token;
-                new_auth_data.refreshToken = auth_data.refreshToken;
-
-                // 로그인 정보 DB 추출 통신
-                var set_login_info = $loginFunction.setLoginInfo(new_auth_data);
-                set_login_info.then(function(res_l){
-
-                  if(res_l.resultcode == "00") {
-
-                    var db_auth_data = res_l.response;
-                    db_auth_data.accessToken = res_t.access_token;
-                    db_auth_data.refreshToken = auth_data.refreshToken;
-                    db_auth_data.loginTime = new Date().getTime();
-
-                    //alert("Login ID : " + db_auth_data.loginId + "\n이름 : " + db_auth_data.name + "\n별명 : " + db_auth_data.nickname + "\n이메일 : " + db_auth_data.email + "\n프로필사진 주소 : " + db_auth_data.profile_image);
-                    $localstorage.setObject("auth_data", db_auth_data);
-
-
-                  } else {
-                    alert('옹알옹알 로그인 정보 통신 에러입니다. Result Code');
-                  }
-
-                });
-
-              } else {
-                alert("네이버 프로필 조회 에러!!!\n에러 : " + res_p.message);
-              }
-
-            });
-
-          } else {
-            alert("네이버 Access Token 갱신 에러!!!\n에러코드 : " + res_t.error + "\n에러메세지 : " + res_t.error_description);
-          }
-
-        });
-
-      } else if (auth_data.loginType === "facebook") {
-
-        // sns으로 로그인 한 카톡(12-24시간)이나 페이스북(약 60일)은 access token 유효기간이 좀 길어서
-        // 유효기간을 대략 11.5시간으로 잡음
-        if((now_time - auth_data.loginTime)/1000 > 41400) {
-
-          //facebookConnectPlugin.login 로그인 성공시 실행되는 function
-          var fbLoginSuccess = function (res_t) {
-            //alert("UserInfo: " + JSON.stringify(res_t, null, 2));
-
-            var user_id = res_t.authResponse.userID;
-            var access_token = res_t.authResponse.accessToken;
-
-            facebookConnectPlugin.api(
-              user_id + "/?fields=id,email,first_name,last_name,gender,age_range",
-              ['public_profile', 'email'],
-              function (res_f) {
-                //alert(JSON.stringify(res_f));
-
-                var new_auth_data = {};
-                new_auth_data.loginType = "facebook";
-                new_auth_data.id = res_f.id;
-                new_auth_data.loginId = "f_" + res_f.id;
-                new_auth_data.name = res_f.last_name + res_f.first_name;
-                new_auth_data.nickname = res_f.first_name;
-                new_auth_data.profile_image = "http://graph.facebook.com/" + res_f.id + "/picture?type=large";
-                new_auth_data.email = res_f.email;
-                new_auth_data.accessToken = access_token;
-                new_auth_data.refreshToken = '';
-
-              },
-              function (error) {
-                  alert("Failed: " + error);
-              }
-            );
-
-          }
-
-          facebookConnectPlugin.login(['public_profile', 'email'], fbLoginSuccess,
-            function loginError (error) {
-              alert(error);
-            }
-          );
-
-        } else {  //if((now_time - auth_data.loginTime)/1000 > 41400) 로그인 유효기간이 11.5 시간이 지나지 않았을때에는 그냥 앱 localstorage값 이용
-          var new_auth_data = auth_data;
-        }
-
-
-        //new_auth_data 변수에 정보를 입력했을때만 실행
-        if(new_auth_data.loginType) {
-
-          //alert("Login ID : " + new_auth_data.loginId + "\n이름 : " + new_auth_data.name + "\n별명 : " + new_auth_data.nickname + "\n이메일 : " + new_auth_data.email + "\n프로필사진 주소 : " + new_auth_data.profile_image);
-          // 로그인 정보 DB 추출 통신
-          var set_login_info = $loginFunction.setLoginInfo(new_auth_data);
-          set_login_info.then(function(res_l){
-
-            if(res_l.resultcode == "00") {
-
-              var db_auth_data = res_l.response;
-              db_auth_data.accessToken = result.accessToken;
-              db_auth_data.refreshToken = "";
-              db_auth_data.loginTime = new Date().getTime();
-
-              //alert("Login ID : " + db_auth_data.loginId + "\n이름 : " + db_auth_data.name + "\n별명 : " + db_auth_data.nickname + "\n이메일 : " + db_auth_data.email + "\n프로필사진 주소 : " + db_auth_data.profile_image + "\nAccess Token : " + db_auth_data.accessToken);
-              $localstorage.setObject("auth_data", db_auth_data);
-
-
-            } else {
-              alert('옹알옹알 로그인 정보 통신 에러입니다. Result Code\n' + res_l.resultcode + '\n' + res_l.message);
-            }
-
-          });
-
-        }     //if(new_auth_data.loginType)
-
-
-      } else {  //일반 로그인일때
-
-      }
-
-    } //if( (now_time - auth_data.loginTime)/1000 > 1) {
-
-  }
 
 })
 

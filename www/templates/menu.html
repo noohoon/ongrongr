@@ -10,7 +10,8 @@
     </ion-header-bar>
     <ion-content>
       <ion-list class="ongr-button-login">
-        <ion-item menu-toggle="left" href="#/app/login">로그인</ion-item>
+        <ion-item menu-toggle="left" href="#/app/login" ng-show="!isLogin">로그인</ion-item>
+        <ion-item menu-toggle="left" href="#/app/login" ng-show="isLogin">로그아웃</ion-item>
       </ion-list>
       <ion-list>
         <ion-item menu-toggle="left" href="#/app/search">
