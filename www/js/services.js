@@ -40,7 +40,7 @@ angular.module('starter.services', [])
 
 
 
-.service('$authService', function($rootScope, $http, $localstorage) {
+.service('$authService', function($rootScope, $http, $localstorage, $ionicPopup) {
 
 //  var uuid = window.device.uuid;
   var uuid = '123456';
@@ -69,20 +69,57 @@ angular.module('starter.services', [])
     $http(req).then(function(res) {
 
       alert(JSON.stringify(res, null, 2));
-      server_token = res.data.token;
+      server_token = res.data.response.token;
 
     },function(res){
-      alert('통신에러!!!');
+      $ionicPopup.alert({
+        title: '서버통신(token) 에러',
+        template: '관리자에게 문의 바랍니다.'
+      });
+    });
+
+  };
+
+  var checkServerAuthData = function(new_auth_data) {
+
+    var req = 
+    {
+        method: 'POST',
+        url: "http://www.ongrongr.com/ionic/bbs/check_login_info.php",
+        data: {
+          uuid : uuid,
+          server_key : SERVER_KEY,
+          server_token : server_token,
+          auth_data : new_auth_data
+        }
+    }
+
+    $http(req).then(function(res) {
+
+      res.data.response.accessToken = new_auth_data.accessToken;
+      res.data.response.refreshToken = new_auth_data.refreshToken;
+
+      //alert(JSON.stringify(res.data.response, null, 2));
+
+      storeAuthData(res.data.response);
+
+    },function(res){
+      $ionicPopup.alert({
+        title: '서버통신(token) 에러',
+        template: '관리자에게 문의 바랍니다.'
+      });
     });
 
   };
 
   return {
-    storeAuthData : storeAuthData,
+//    storeAuthData : storeAuthData,
     checkServerToken : checkServerToken,
+    checkServerAuthData : checkServerAuthData,
     isLogin : function() { return is_login; },
     getUuid : function() { return uuid; },
-    getServerToken : function() { return server_token; }
+    getServerToken : function() { return server_token; },
+    getAuthData : function() { return auth_data; }
 
   }
 })

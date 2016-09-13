@@ -30,10 +30,6 @@ angular.module('starter.controllers', [])
 
 .controller('LoginCtrl', function($scope, $state, $stateParams, $http, $localstorage, $commonFunction, $loginFunction, SERVER_AUTH, $authService) {
 
-  if($authService.isLogin) {
-    $state.go('app.tabs.mydiary');
-  }
-
   $scope.loginWithKakao = function () {
     
     KakaoTalk.login(
@@ -50,8 +46,13 @@ angular.module('starter.controllers', [])
           new_auth_data.accessToken = result.accessToken;
           new_auth_data.refreshToken = '';
 
+
+          // 카카오톡 정보를 서버에 전송 저장 or 회원정보 추출
+          $authService.checkServerAuthData(new_auth_data);
+
           //alert("Login ID : " + new_auth_data.loginId + "\n이름 : " + new_auth_data.name + "\n별명 : " + new_auth_data.nickname + "\n이메일 : " + new_auth_data.email + "\n프로필사진 주소 : " + new_auth_data.profile_image);
           // 로그인 정보 DB 추출 통신
+/*
           var set_login_info = $loginFunction.setLoginInfo(new_auth_data);
           set_login_info.then(function(res_l){
 
@@ -70,7 +71,7 @@ angular.module('starter.controllers', [])
               alert('옹알옹알 로그인 정보 통신 에러입니다. Result Code\n' + res_l.resultcode + '\n' + res_l.message);
             }
 
-          });
+          });*/
         },
         function (message) {
           alert('Error login!\n'+message);
@@ -263,9 +264,9 @@ angular.module('starter.controllers', [])
   $scope.checkState = function(){
 
       $scope.uuid = $authService.getUuid();
-      $scope.token = $localstorage.getServerToken();
+      $scope.token = $authService.getServerToken();
 
-      $scope.auth_data = $localstorage.getAuthData();
+      $scope.auth_data = $authService.getAuthData();
 
 
 /*
